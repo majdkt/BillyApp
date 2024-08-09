@@ -1,6 +1,6 @@
 # BillyApp
 
-BillManagerApp is a mobile application designed to help users manage their monthly bills. The app allows users to add different bills, assign payment dates, track the start of contracts, and calculate the total amount paid over time. It also includes features to notify users of upcoming payments.
+BillyApp is a mobile application designed to help users manage their monthly bills. The app allows users to add different bills, assign payment dates, track the start of contracts, and calculate the total amount paid over time. It also includes features to notify users of upcoming payments.
 
 ## Table of Contents
 
