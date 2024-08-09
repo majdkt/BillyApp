@@ -13,13 +13,20 @@ function BillList({ bills }) {
         return difference;
     };
 
+    const formatCurrency = (amount) => {
+        return new Intl.NumberFormat('de-DE', {
+            style: 'currency',
+            currency: 'EUR',
+        }).format(amount);
+    };
+
     return (
         <div>
             <h2>Bills</h2>
             <ul>
                 {bills.map((bill, index) => (
                     <li key={index}>
-                        {bill.name} - ${bill.amount} (Next Payment in {daysLeftForNextPayment(bill.paymentDate)} days)
+                        {bill.name} - {formatCurrency(bill.amount)} (Next Payment in {daysLeftForNextPayment(bill.paymentDate)} days)
                     </li>
                 ))}
             </ul>
@@ -31,9 +38,9 @@ BillList.propTypes = {
     bills: PropTypes.arrayOf(
         PropTypes.shape({
             name: PropTypes.string.isRequired,
-            amount: PropTypes.number.isRequired, // Ensure amount is a number
-            paymentDate: PropTypes.string.isRequired,
-            contractStartDate: PropTypes.string.isRequired,
+            amount: PropTypes.number.isRequired,
+            paymentDate: PropTypes.instanceOf(Date).isRequired,
+            contractStartDate: PropTypes.instanceOf(Date).isRequired,
         })
     ).isRequired,
 };

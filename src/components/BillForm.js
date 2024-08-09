@@ -1,13 +1,15 @@
 // src/components/BillForm.js
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 
 function BillForm({ onAddBill }) {
     const [formData, setFormData] = useState({
         name: '',
         amount: '',
-        paymentDate: '',
-        contractStartDate: '',
+        paymentDate: new Date(),
+        contractStartDate: new Date(),
     });
 
     const handleInputChange = (e) => {
@@ -15,6 +17,13 @@ function BillForm({ onAddBill }) {
         setFormData({
             ...formData,
             [name]: value,
+        });
+    };
+
+    const handleDateChange = (date, name) => {
+        setFormData({
+            ...formData,
+            [name]: date,
         });
     };
 
@@ -27,45 +36,55 @@ function BillForm({ onAddBill }) {
         setFormData({
             name: '',
             amount: '',
-            paymentDate: '',
-            contractStartDate: '',
+            paymentDate: new Date(),
+            contractStartDate: new Date(),
         });
     };
 
     return (
         <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                name="name"
-                placeholder="Bill Name"
-                value={formData.name}
-                onChange={handleInputChange}
-                required
-            />
-            <input
-                type="number"
-                name="amount"
-                placeholder="Amount"
-                value={formData.amount}
-                onChange={handleInputChange}
-                required
-            />
-            <input
-                type="date"
-                name="paymentDate"
-                placeholder="Payment Date"
-                value={formData.paymentDate}
-                onChange={handleInputChange}
-                required
-            />
-            <input
-                type="date"
-                name="contractStartDate"
-                placeholder="Contract Start Date"
-                value={formData.contractStartDate}
-                onChange={handleInputChange}
-                required
-            />
+            <div>
+                <label htmlFor="name">Bill Name:</label>
+                <input
+                    type="text"
+                    id="name"
+                    name="name"
+                    placeholder="Enter bill name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="amount">Amount (€):</label>
+                <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    placeholder="Enter amount"
+                    value={formData.amount}
+                    onChange={handleInputChange}
+                    required
+                />
+            </div>
+            <div>
+                <label htmlFor="paymentDate">Payment Date:</label>
+                <DatePicker
+                    id="paymentDate"
+                    selected={formData.paymentDate}
+                    onChange={(date) => handleDateChange(date, 'paymentDate')}
+                    dateFormat="dd/MM/yyyy"
+                />
+            </div>
+            <div>
+                <label htmlFor="contractStartDate">Contract Start Date:</label>
+                <DatePicker
+                    id="contractStartDate"
+                    selected={formData.contractStartDate}
+                    onChange={(date) => handleDateChange(date, 'contractStartDate')}
+                    dateFormat="dd/MM/yyyy"
+                />
+            </div>
             <button type="submit">Add Bill</button>
         </form>
     );
