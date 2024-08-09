@@ -22,3 +22,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 /.idea/.gitignore
+/yarn.lock
+/.idea/vcs.xml
+/.idea/BillyApp.iml
+/.idea/modules.xml
