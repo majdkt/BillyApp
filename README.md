@@ -42,7 +42,7 @@ Before you begin, ensure you have met the following requirements:
 
    ```bash
    git clone https://github.com/majdkt/BillyApp.git
-   cd BillManagerApp
+   cd BillyApp
    ```
 
 2. Install dependencies:
