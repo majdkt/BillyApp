@@ -1,59 +1,92 @@
-// src/App.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './css/App.css';
+import {
+  getNextPaymentDate,
+  formatCurrency,
+  formatDate,
+  calculateTotalPaid,
+  calculatePaidMonths,
+  daysLeftForNextPayment
+} from "./components/dateUtils.js";
+
 import TopBar from './components/TopBar';
 import BillForm from './components/BillForm';
 import BillList from './components/BillList';
-
+import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
+import { db } from "./firebase";
 
 function App() {
   const [bills, setBills] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const addBill = (newBill) => {
-    setBills([...bills, newBill]);
+  const loadBills = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const querySnapshot = await getDocs(collection(db, "bills"));
+      const userBills = [];
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        userBills.push({
+          id: doc.id,
+          name: data.name,
+          amount: data.amount,
+          paymentDate: data.paymentDate instanceof Timestamp ? data.paymentDate.toDate() : new Date(data.paymentDate),
+          contractStartDate: data.contractStartDate instanceof Timestamp ? data.contractStartDate.toDate() : new Date(data.contractStartDate),
+        });
+      });
+      setBills(userBills);
+    } catch (e) {
+      console.error("Error loading documents: ", e);
+      setError("Failed to load bills. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const calculateTotalPaid = () => {
-    const today = new Date();
-    return bills.reduce((total, bill) => {
-      const paymentDate = new Date(bill.paymentDate);
-      const contractStartDate = new Date(bill.contractStartDate);
-      if (today >= contractStartDate) {
-        const months = Math.floor(
-            (today - contractStartDate) / (1000 * 60 * 60 * 24 * 30)
-        );
-        return total + (months * bill.amount);
-      }
-      return total;
-    }, 0);
-  };
-
-  const calculatePaidMonths = () => {
-    const today = new Date();
-    return bills.reduce((totalMonths, bill) => {
-      const contractStartDate = new Date(bill.contractStartDate);
-      if (today >= contractStartDate) {
-        const months = Math.floor(
-            (today - contractStartDate) / (1000 * 60 * 60 * 24 * 30)
-        );
-        return totalMonths + months;
-      }
-      return totalMonths;
-    }, 0);
+  const addBill = async (newBill) => {
+    setError(null);
+    try {
+      const docRef = await addDoc(collection(db, "bills"), newBill);
+      setBills([...bills, { id: docRef.id, ...newBill }]);
+    } catch (e) {
+      console.error("Error adding document: ", e);
+      setError("Failed to add bill. Please try again.");
+    }
   };
 
   return (
-      <div className="App">
-        <TopBar title="Bill Manager" />
-        <div className="content">
-          <BillForm onAddBill={addBill} />
-          <BillList bills={bills} />
-          <h2>Total Paid: {new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(calculateTotalPaid())}</h2>
-          <h2>Total Paid Months: {calculatePaidMonths()}</h2>
-        </div>
+      <div>
+        <TopBar />
+        <h2>Bills</h2>
+        <BillForm onAddBill={addBill} />
+        <button onClick={loadBills} disabled={loading}>
+          {loading ? "Loading..." : "Load Bills"}
+        </button>
+        {error && <p>{error}</p>}
+        <ul>
+          {bills.length > 0 ? (
+              bills.map((bill, index) => {
+                const nextPaymentDate = getNextPaymentDate(bill.paymentDate);
+                return (
+                    <li key={index}>
+                      <h3>{bill.name}</h3>
+                      <p>Amount: {formatCurrency(bill.amount)}</p>
+                      <p>Contract Start Date: {formatDate(bill.contractStartDate)}</p>
+                      <p>Total Paid: {formatCurrency(calculateTotalPaid(bill.amount, bill.contractStartDate))}</p>
+                      <p>Paid Months: {calculatePaidMonths(bill.contractStartDate)} months</p>
+                      <p>Next Payment Date: {formatDate(nextPaymentDate)}</p>
+                      <p>Next Payment in {daysLeftForNextPayment(bill.paymentDate)} days</p>
+                    </li>
+                );
+              })
+          ) : (
+              <p>No bills available.</p>
+          )}
+        </ul>
       </div>
   );
 }
 
 export default App;
-
