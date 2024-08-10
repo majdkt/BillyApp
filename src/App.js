@@ -15,7 +15,7 @@ const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bills, setBills] = useState([]); // State to store fetched bills
 
-// Handle Logout
+  // Handle Logout
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -68,7 +68,7 @@ const App = () => {
   }, []);
 
   return (
-      <div>
+      <div className="App">
         <h1>Welcome to the Bills App</h1>
         {!isLoggedIn ? (
             <Login onLoginSuccess={() => setIsLoggedIn(true)} />
@@ -82,7 +82,8 @@ const App = () => {
               <ul>
                 {bills.map((bill) => (
                     <li key={bill.id}>
-                      {bill.name} - {bill.amount} - {bill.paymentDate.toDateString()} - {bill.contractStartDate.toDateString()}                      {bill.fileUrl && (
+                      {bill.name} - {bill.amount} - {bill.paymentDate.toDateString()} - {bill.contractStartDate.toDateString()}
+                      {bill.fileUrl && (
                           <a href={bill.fileUrl} target="_blank" rel="noopener noreferrer">
                             View File
                           </a>
