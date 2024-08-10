@@ -1,92 +1,68 @@
 import React, { useState, useEffect } from 'react';
-import './css/App.css';
-import {
-  getNextPaymentDate,
-  formatCurrency,
-  formatDate,
-  calculateTotalPaid,
-  calculatePaidMonths,
-  daysLeftForNextPayment
-} from "./components/dateUtils.js";
+import { signOut } from 'firebase/auth';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from './firebase'; // Import db from firebase.js
+import Login from './components/Login'; // Import Login component
 
-import TopBar from './components/TopBar';
-import BillForm from './components/BillForm';
-import BillList from './components/BillList';
-import { collection, addDoc, getDocs, Timestamp } from "firebase/firestore";
-import { db } from "./firebase";
+// Initialize Firebase Authentication
+import { getAuth } from 'firebase/auth';
+const auth = getAuth();
 
-function App() {
-  const [bills, setBills] = useState([]);
+const App = () => {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const loadBills = async () => {
+  // Handle Logout
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      setUser(null);
+      setIsLoggedIn(false);
+    } catch (error) {
+      console.error("Error signing out: ", error);
+    }
+  };
+
+  // Count Documents in Firestore
+  const loadBillCount = async () => {
     setLoading(true);
-    setError(null);
     try {
       const querySnapshot = await getDocs(collection(db, "bills"));
-      const userBills = [];
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        userBills.push({
-          id: doc.id,
-          name: data.name,
-          amount: data.amount,
-          paymentDate: data.paymentDate instanceof Timestamp ? data.paymentDate.toDate() : new Date(data.paymentDate),
-          contractStartDate: data.contractStartDate instanceof Timestamp ? data.contractStartDate.toDate() : new Date(data.contractStartDate),
-        });
-      });
-      setBills(userBills);
-    } catch (e) {
-      console.error("Error loading documents: ", e);
-      setError("Failed to load bills. Please try again.");
+      const count = querySnapshot.size; // Get the number of documents
+      console.log(`Number of documents: ${count}`);
+    } catch (error) {
+      console.error("Error loading document count: ", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const addBill = async (newBill) => {
-    setError(null);
-    try {
-      const docRef = await addDoc(collection(db, "bills"), newBill);
-      setBills([...bills, { id: docRef.id, ...newBill }]);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-      setError("Failed to add bill. Please try again.");
-    }
-  };
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+      setUser(currentUser);
+      setIsLoggedIn(!!currentUser);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   return (
       <div>
-        <TopBar />
-        <h2>Bills</h2>
-        <BillForm onAddBill={addBill} />
-        <button onClick={loadBills} disabled={loading}>
-          {loading ? "Loading..." : "Load Bills"}
-        </button>
-        {error && <p>{error}</p>}
-        <ul>
-          {bills.length > 0 ? (
-              bills.map((bill, index) => {
-                const nextPaymentDate = getNextPaymentDate(bill.paymentDate);
-                return (
-                    <li key={index}>
-                      <h3>{bill.name}</h3>
-                      <p>Amount: {formatCurrency(bill.amount)}</p>
-                      <p>Contract Start Date: {formatDate(bill.contractStartDate)}</p>
-                      <p>Total Paid: {formatCurrency(calculateTotalPaid(bill.amount, bill.contractStartDate))}</p>
-                      <p>Paid Months: {calculatePaidMonths(bill.contractStartDate)} months</p>
-                      <p>Next Payment Date: {formatDate(nextPaymentDate)}</p>
-                      <p>Next Payment in {daysLeftForNextPayment(bill.paymentDate)} days</p>
-                    </li>
-                );
-              })
-          ) : (
-              <p>No bills available.</p>
-          )}
-        </ul>
+        <h1>Welcome to the Bills App</h1>
+        {!isLoggedIn ? (
+            <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+        ) : (
+            <div>
+              <button onClick={handleLogout}>Log Out</button>
+              <div>
+                <button onClick={loadBillCount}>Count Documents</button>
+                {loading && <p>Loading...</p>}
+              </div>
+            </div>
+        )}
       </div>
   );
-}
+};
 
 export default App;

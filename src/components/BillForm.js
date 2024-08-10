@@ -1,23 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import { storage } from "../firebase";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-const BillForm = ({ onAddBill }) => {
-    const [name, setName] = useState('');
-    const [amount, setAmount] = useState('');
-    const [paymentDate, setPaymentDate] = useState('');
-    const [contractStartDate, setContractStartDate] = useState('');
+function BillForm({ onAddBill }) {
+    const [name, setName] = useState("");
+    const [amount, setAmount] = useState("");
+    const [paymentDate, setPaymentDate] = useState("");
+    const [contractStartDate, setContractStartDate] = useState("");
+    const [file, setFile] = useState(null); // State to handle file input
+    const [uploadProgress, setUploadProgress] = useState(0); // State to track upload progress
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onAddBill({
+
+        let fileUrl = "";
+        if (file) {
+            const fileRef = ref(storage, `bills/${file.name}`);
+            const uploadTask = uploadBytesResumable(fileRef, file);
+
+            uploadTask.on(
+                "state_changed",
+                (snapshot) => {
+                    const progress =
+                        (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                    setUploadProgress(progress); // Update progress
+                },
+                (error) => {
+                    console.error("Upload failed:", error);
+                },
+                async () => {
+                    fileUrl = await getDownloadURL(uploadTask.snapshot.ref);
+                    handleAddBill(fileUrl); // Add bill after file is uploaded
+                }
+            );
+        } else {
+            handleAddBill(fileUrl); // Add bill without file
+        }
+    };
+
+    const handleAddBill = (fileUrl) => {
+        const newBill = {
             name,
             amount: parseFloat(amount),
             paymentDate: new Date(paymentDate),
             contractStartDate: new Date(contractStartDate),
-        });
-        setName('');
-        setAmount('');
-        setPaymentDate('');
-        setContractStartDate('');
+            fileUrl, // Add the file URL to the bill object
+        };
+
+        onAddBill(newBill);
+        resetForm();
+    };
+
+    const resetForm = () => {
+        setName("");
+        setAmount("");
+        setPaymentDate("");
+        setContractStartDate("");
+        setFile(null);
+        setUploadProgress(0);
     };
 
     return (
@@ -50,9 +90,11 @@ const BillForm = ({ onAddBill }) => {
                 onChange={(e) => setContractStartDate(e.target.value)}
                 required
             />
+            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+            {uploadProgress > 0 && <progress value={uploadProgress} max="100" />}
             <button type="submit">Add Bill</button>
         </form>
     );
-};
+}
 
 export default BillForm;

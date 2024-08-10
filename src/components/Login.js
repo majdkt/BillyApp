@@ -1,47 +1,37 @@
-// src/components/Login.js
 import React, { useState } from 'react';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
+import { login } from '../authService';
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const auth = getAuth();
+    const [error, setError] = useState(null);
 
-    const handleLogin = async () => {
+    const handleLogin = async (e) => {
+        e.preventDefault();
+        setError(null);
         try {
-            await signInWithEmailAndPassword(auth, email, password);
-            alert("Logged in successfully!");
-        } catch (error) {
-            alert(error.message);
-        }
-    };
-
-    const handleSignup = async () => {
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            alert("Account created successfully!");
-        } catch (error) {
-            alert(error.message);
+            await login(email, password);
+            onLoginSuccess(); // Callback to notify parent component of successful login
+        } catch (e) {
+            setError(e.message);
         }
     };
 
     return (
         <div>
             <h2>Login</h2>
-            <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-            />
-            <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-            />
-            <button onClick={handleLogin}>Login</button>
-            <button onClick={handleSignup}>Sign Up</button>
+            <form onSubmit={handleLogin}>
+                <div>
+                    <label>Email:</label>
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                </div>
+                <div>
+                    <label>Password:</label>
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                </div>
+                {error && <p style={{ color: 'red' }}>{error}</p>}
+                <button type="submit">Login</button>
+            </form>
         </div>
     );
 };
