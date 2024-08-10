@@ -1,5 +1,4 @@
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "firebase/auth";
-import { db } from "./firebase"; // Ensure your Firebase configuration is correctly imported
+import { getAuth, signInWithEmailAndPassword} from "firebase/auth";
 
 const auth = getAuth();
 
@@ -12,19 +11,4 @@ const login = async (email, password) => {
     }
 };
 
-const logout = async () => {
-    try {
-        await signOut(auth);
-    } catch (error) {
-        console.error("Error logging out: ", error);
-        throw new Error(error.message);
-    }
-};
-
-const onAuthChange = (callback) => {
-    onAuthStateChanged(auth, (user) => {
-        callback(user);
-    });
-};
-
-export { login, logout, onAuthChange };
+export { login };

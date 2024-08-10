@@ -1,4 +1,8 @@
 /* General Styles */
+* {
+  box-sizing: border-box;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   background-color: #f8f8f8;
@@ -14,15 +18,17 @@ body {
 .App {
   text-align: center;
   background-color: #fff;
-  border-radius: 20px;
+  border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  max-width: 400px;
   width: 100%;
+  max-width: 400px;
+  overflow: hidden; /* Ensure no content overflows the box */
+  padding-top: 15rem; /* Ensure content doesn't overlap with TopBar */
 }
 
+/* Content Styles */
 .content {
-  padding: 2rem;
+  padding: 2rem 1rem;
 }
 
 /* Input Styles */

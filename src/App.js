@@ -5,8 +5,10 @@ import { db } from './firebase';
 import Login from './components/Login';
 import { getAuth } from 'firebase/auth';
 import BillForm from './components/BillForm';
-import TopBar from './components/TopBar'; // Import the TopBar component
+import TopBar from './components/TopBar';
 import './css/App.css';
+
+import { Route } from 'react-router-dom'; // Updated import
 
 const auth = getAuth();
 
@@ -14,9 +16,9 @@ const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [bills, setBills] = useState([]); // State to store fetched bills
+  const [bills, setBills] = useState([]);
 
-  // Handle Logout
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -27,13 +29,16 @@ const App = () => {
     }
   };
 
+  const handleProfileNavigate = () => {
+    Route(''); // Navigate to the profile page
+  };
+
   const fetchBills = async () => {
     setLoading(true);
     try {
       const querySnapshot = await getDocs(collection(db, "bills"));
       const fetchedBills = querySnapshot.docs.map(doc => {
         const data = doc.data();
-        // Convert Firestore Timestamps to JavaScript Date objects
         data.paymentDate = data.paymentDate.toDate();
         data.contractStartDate = data.contractStartDate.toDate();
         return { id: doc.id, ...data };
@@ -61,7 +66,7 @@ const App = () => {
       setIsLoggedIn(!!currentUser);
 
       if (currentUser) {
-        fetchBills(); // Fetch bills when user logs in
+        fetchBills();
       }
     });
 
@@ -70,16 +75,17 @@ const App = () => {
 
   return (
       <div className="App">
-        <TopBar title="BillyApp" /> {/* Add TopBar to the App */}
-
-        <div style={{ paddingTop: '450px' }}> {/* Adjust padding to account for the fixed TopBar */}
+        <TopBar
+            title="BillyApp"
+            onLogout={handleLogout}
+            onProfileNavigate={handleProfileNavigate}
+        />
+        <div className="content">
           {!isLoggedIn ? (
               <Login onLoginSuccess={() => setIsLoggedIn(true)} />
           ) : (
               <div>
-                <button onClick={handleLogout}>Log Out</button>
-                <BillForm onAddBill={handleAddBill} /> {/* Pass the addBill function */}
-
+                <BillForm onAddBill={handleAddBill} />
                 <h2>Your Bills</h2>
                 {loading && <p>Loading...</p>}
                 <ul>
