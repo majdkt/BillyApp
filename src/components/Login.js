@@ -20,17 +20,23 @@ const Login = ({ onLoginSuccess }) => {
 
     return (
         <div>
-            <h2>Login</h2>
+            <h1>Hello!</h1>
+            <h2>Hello!</h2>
+            <h3>Hello!</h3>
+            <h4>Hello!</h4>
+            <h5>Hello!</h5>
+            <h6>Hello!</h6>
+            <h2>logIn</h2>
             <form onSubmit={handleLogin}>
                 <div>
                     <label>Email:</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required/>
                 </div>
                 <div>
                     <label>Password:</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required/>
                 </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
+                {error && <p style={{color: 'red'}}>{error}</p>}
                 <button type="submit">Login</button>
             </form>
         </div>
