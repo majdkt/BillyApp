@@ -38,16 +38,16 @@ function BillForm({ onAddBill }) {
         }
     };
 
-    const handleAddBill = (fileUrl) => {
+    const handleAddBill = async (fileUrl) => {
         const newBill = {
             name,
             amount: parseFloat(amount),
             paymentDate: new Date(paymentDate),
             contractStartDate: new Date(contractStartDate),
-            fileUrl, // Add the file URL to the bill object
+            fileUrl,
         };
 
-        onAddBill(newBill);
+        onAddBill(newBill); // Pass the newBill object to the parent component
         resetForm();
     };
 
