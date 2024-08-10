@@ -5,6 +5,7 @@ import { db } from './firebase';
 import Login from './components/Login';
 import { getAuth } from 'firebase/auth';
 import BillForm from './components/BillForm';
+import './css/App.css';
 
 const auth = getAuth();
 
@@ -47,7 +48,7 @@ const App = () => {
   const handleAddBill = async (newBill) => {
     try {
       await addDoc(collection(db, "bills"), newBill); // Use Firestore's addDoc
-      fetchBills();
+      await fetchBills();
     } catch (error) {
       console.error("Error adding bill: ", error);
     }
