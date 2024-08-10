@@ -5,6 +5,7 @@ import { db } from './firebase';
 import Login from './components/Login';
 import { getAuth } from 'firebase/auth';
 import BillForm from './components/BillForm';
+import TopBar from './components/TopBar'; // Import the TopBar component
 import './css/App.css';
 
 const auth = getAuth();
@@ -69,30 +70,33 @@ const App = () => {
 
   return (
       <div className="App">
-        <h1>Welcome to the Bills App</h1>
-        {!isLoggedIn ? (
-            <Login onLoginSuccess={() => setIsLoggedIn(true)} />
-        ) : (
-            <div>
-              <button onClick={handleLogout}>Log Out</button>
-              <BillForm onAddBill={handleAddBill} /> {/* Pass the addBill function */}
+        <TopBar title="BillyApp" /> {/* Add TopBar to the App */}
 
-              <h2>Your Bills</h2>
-              {loading && <p>Loading...</p>}
-              <ul>
-                {bills.map((bill) => (
-                    <li key={bill.id}>
-                      {bill.name} - {bill.amount} - {bill.paymentDate.toDateString()} - {bill.contractStartDate.toDateString()}
-                      {bill.fileUrl && (
-                          <a href={bill.fileUrl} target="_blank" rel="noopener noreferrer">
-                            View File
-                          </a>
-                      )}
-                    </li>
-                ))}
-              </ul>
-            </div>
-        )}
+        <div style={{ paddingTop: '450px' }}> {/* Adjust padding to account for the fixed TopBar */}
+          {!isLoggedIn ? (
+              <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+          ) : (
+              <div>
+                <button onClick={handleLogout}>Log Out</button>
+                <BillForm onAddBill={handleAddBill} /> {/* Pass the addBill function */}
+
+                <h2>Your Bills</h2>
+                {loading && <p>Loading...</p>}
+                <ul>
+                  {bills.map((bill) => (
+                      <li key={bill.id}>
+                        {bill.name} - {bill.amount} - {bill.paymentDate.toDateString()} - {bill.contractStartDate.toDateString()}
+                        {bill.fileUrl && (
+                            <a href={bill.fileUrl} target="_blank" rel="noopener noreferrer">
+                              View File
+                            </a>
+                        )}
+                      </li>
+                  ))}
+                </ul>
+              </div>
+          )}
+        </div>
       </div>
   );
 };

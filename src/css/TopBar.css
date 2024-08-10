@@ -1,6 +1,16 @@
+/* TopBar.css */
 .TopBar {
-    background-color: #282c34;
+    background-color: #007aff; /* iOS blue color */
     padding: 1rem;
     color: white;
     text-align: center;
+    border-radius: 12px 12px 0 0; /* Rounded corners for the top */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    font-size: 1rem;
+    font-weight: bold;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
 }
