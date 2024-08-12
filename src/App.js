@@ -45,14 +45,12 @@ const App = () => {
 
         const fetchedBills = querySnapshot.docs.map((doc) => {
           const data = doc.data();
-          console.log('Fetched bill:', data); // Log each fetched bill
           data.paymentDate = data.paymentDate.toDate();
           data.contractStartDate = data.contractStartDate.toDate();
           return { id: doc.id, ...data };
         });
 
-        setBills(fetchedBills);
-        console.log('All fetched bills:', fetchedBills); // Log all fetched bills
+        setBills(fetchedBills); // Update the state with fetched bills
       }
     } catch (error) {
       console.error('Error fetching bills: ', error);
@@ -79,9 +77,9 @@ const App = () => {
       setIsLoggedIn(!!currentUser);
 
       if (currentUser) {
-        fetchBills(); // Fetch bills for the logged-in user
+        fetchBills(); // Automatically fetch bills on login
       } else {
-        setBills([]); // Clear the bills if no user is logged in
+        setBills([]); // Clear bills when logged out
       }
     });
 
@@ -97,7 +95,10 @@ const App = () => {
         />
         <div className="content">
           {!isLoggedIn ? (
-              <Login onLoginSuccess={() => setIsLoggedIn(true)} />
+              <Login onLoginSuccess={() => {
+                setIsLoggedIn(true)
+                fetchBills()
+              }}/>
           ) : (
               <div>
                 <BillForm onAddBill={handleAddBill} />
