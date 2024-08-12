@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { signOut } from 'firebase/auth';
-import { collection, addDoc, getDocs } from 'firebase/firestore';
+import { collection, doc ,addDoc, getDocs } from 'firebase/firestore';
 import { db } from './firebase';
 import Login from './components/Login';
 import { getAuth } from 'firebase/auth';
@@ -24,10 +24,12 @@ const App = () => {
       await signOut(auth);
       setUser(null);
       setIsLoggedIn(false);
+      setBills([]); // Clear the bills when the user logs out
     } catch (error) {
       console.error("Error signing out: ", error);
     }
   };
+
 
   const handleProfileNavigate = () => {
     Route(''); // Navigate to the profile page
@@ -36,16 +38,24 @@ const App = () => {
   const fetchBills = async () => {
     setLoading(true);
     try {
-      const querySnapshot = await getDocs(collection(db, "bills"));
-      const fetchedBills = querySnapshot.docs.map(doc => {
-        const data = doc.data();
-        data.paymentDate = data.paymentDate.toDate();
-        data.contractStartDate = data.contractStartDate.toDate();
-        return { id: doc.id, ...data };
-      });
-      setBills(fetchedBills);
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        const billsRef = collection(userRef, 'bills');
+        const querySnapshot = await getDocs(billsRef);
+
+        const fetchedBills = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          console.log('Fetched bill:', data); // Log each fetched bill
+          data.paymentDate = data.paymentDate.toDate();
+          data.contractStartDate = data.contractStartDate.toDate();
+          return { id: doc.id, ...data };
+        });
+
+        setBills(fetchedBills);
+        console.log('All fetched bills:', fetchedBills); // Log all fetched bills
+      }
     } catch (error) {
-      console.error("Error fetching bills: ", error);
+      console.error('Error fetching bills: ', error);
     } finally {
       setLoading(false);
     }
@@ -53,8 +63,11 @@ const App = () => {
 
   const handleAddBill = async (newBill) => {
     try {
-      await addDoc(collection(db, "bills"), newBill); // Use Firestore's addDoc
-      await fetchBills();
+      if (user) {
+        const userRef = doc(db, 'users', user.uid);
+        await addDoc(collection(userRef, 'bills'), newBill);
+        await fetchBills(); // Refetch the bills after adding a new one
+      }
     } catch (error) {
       console.error("Error adding bill: ", error);
     }
@@ -66,7 +79,9 @@ const App = () => {
       setIsLoggedIn(!!currentUser);
 
       if (currentUser) {
-        fetchBills();
+        fetchBills(); // Fetch bills for the logged-in user
+      } else {
+        setBills([]); // Clear the bills if no user is logged in
       }
     });
 
