@@ -1,27 +1,21 @@
+// src/components/TopBar.js
 import React from 'react';
-import PropTypes from 'prop-types';
-import '../css/TopBar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import '../css/TopBar.css';
 
-function TopBar({ title, onLogout, onProfileNavigate }) {
+const TopBar = ({ title, onLogout, onProfileNavigate }) => {
     return (
-        <header className="TopBar">
-            <button className="icon-button" onClick={onProfileNavigate}>
+        <div className="TopBar">
+            <button className="icon-button" onClick={onProfileNavigate} aria-label="Profile">
                 <FontAwesomeIcon icon={faUser} />
             </button>
             <h1>{title}</h1>
-            <button className="icon-button" onClick={onLogout}>
+            <button className="icon-button" onClick={onLogout} aria-label="Logout">
                 <FontAwesomeIcon icon={faSignOutAlt} />
             </button>
-        </header>
+        </div>
     );
-}
-
-TopBar.propTypes = {
-    title: PropTypes.string.isRequired,
-    onLogout: PropTypes.func.isRequired,
-    onProfileNavigate: PropTypes.func.isRequired,
 };
 
 export default TopBar;

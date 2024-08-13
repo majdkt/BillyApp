@@ -1,57 +1,41 @@
 import React, { useState, useEffect } from 'react';
-import { signOut } from 'firebase/auth';
-import { collection, doc ,addDoc, getDocs } from 'firebase/firestore';
-import { db } from './firebase';
+import { useNavigate } from 'react-router-dom';
+import { signOut, getAuth } from 'firebase/auth';
+import { fetchBills, addBill } from './services/billService';
 import Login from './components/Login';
-import { getAuth } from 'firebase/auth';
 import BillForm from './components/BillForm';
+import BillList from './components/BillList';
 import TopBar from './components/TopBar';
 import './css/App.css';
-
-import { Route } from 'react-router-dom'; // Updated import
-
-const auth = getAuth();
 
 const App = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [bills, setBills] = useState([]);
-
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
-      await signOut(auth);
+      await signOut(getAuth());
       setUser(null);
       setIsLoggedIn(false);
       setBills([]); // Clear the bills when the user logs out
+      navigate('/'); // Redirect to the login page
     } catch (error) {
       console.error("Error signing out: ", error);
     }
   };
 
-
   const handleProfileNavigate = () => {
-    Route(''); // Navigate to the profile page
+    navigate('/profile'); // Navigate to the profile page
   };
 
-  const fetchBills = async () => {
+  const loadBills = async (user) => {
     setLoading(true);
     try {
-      if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        const billsRef = collection(userRef, 'bills');
-        const querySnapshot = await getDocs(billsRef);
-
-        const fetchedBills = querySnapshot.docs.map((doc) => {
-          const data = doc.data();
-          data.paymentDate = data.paymentDate.toDate();
-          data.contractStartDate = data.contractStartDate.toDate();
-          return { id: doc.id, ...data };
-        });
-
-        setBills(fetchedBills); // Update the state with fetched bills
-      }
+      const fetchedBills = await fetchBills(user);
+      setBills(fetchedBills);
     } catch (error) {
       console.error('Error fetching bills: ', error);
     } finally {
@@ -61,23 +45,20 @@ const App = () => {
 
   const handleAddBill = async (newBill) => {
     try {
-      if (user) {
-        const userRef = doc(db, 'users', user.uid);
-        await addDoc(collection(userRef, 'bills'), newBill);
-        await fetchBills(); // Refetch the bills after adding a new one
-      }
+      await addBill(user, newBill);
+      await loadBills(user); // Refetch the bills after adding a new one
     } catch (error) {
       console.error("Error adding bill: ", error);
     }
   };
 
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((currentUser) => {
+    const unsubscribe = getAuth().onAuthStateChanged((currentUser) => {
       setUser(currentUser);
       setIsLoggedIn(!!currentUser);
 
       if (currentUser) {
-        fetchBills(); // Automatically fetch bills on login
+        loadBills(currentUser); // Automatically fetch bills on login
       } else {
         setBills([]); // Clear bills when logged out
       }
@@ -85,7 +66,6 @@ const App = () => {
 
     return () => unsubscribe();
   }, []);
-
   return (
       <div className="App">
         <TopBar
@@ -96,26 +76,15 @@ const App = () => {
         <div className="content">
           {!isLoggedIn ? (
               <Login onLoginSuccess={() => {
-                setIsLoggedIn(true)
-                fetchBills()
-              }}/>
+                setIsLoggedIn(true);
+                fetchBills();
+              }} />
           ) : (
               <div>
                 <BillForm onAddBill={handleAddBill} />
                 <h2>Your Bills</h2>
                 {loading && <p>Loading...</p>}
-                <ul>
-                  {bills.map((bill) => (
-                      <li key={bill.id}>
-                        {bill.name} - {bill.amount} - {bill.paymentDate.toDateString()} - {bill.contractStartDate.toDateString()}
-                        {bill.fileUrl && (
-                            <a href={bill.fileUrl} target="_blank" rel="noopener noreferrer">
-                              View File
-                            </a>
-                        )}
-                      </li>
-                  ))}
-                </ul>
+                <BillList bills={bills} /> {/* Use the new BillList component */}
               </div>
           )}
         </div>
