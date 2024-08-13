@@ -1,0 +1,35 @@
+/* src/css/BillList.css */
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 20px 0;
+}
+
+.bill-item {
+    background-color: #f8f8f8;
+    margin: 10px 0;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    font-size: 16px;
+    text-align: left;
+}
+
+.bill-item .bill-details {
+    margin-bottom: 0.5rem;
+}
+
+.bill-item .bill-details strong {
+    font-weight: bold;
+}
+
+.bill-item a {
+    color: #007aff;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.bill-item a:hover {
+    text-decoration: underline;
+}
